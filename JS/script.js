@@ -10,12 +10,30 @@ keyboardSymbols.forEach(el => {
 
 const buttons = calculatorKeyboard.querySelectorAll('.button');
 
-let lastComma = null;
+let lastComma = null,
+    parenthesisOpen = 0,
+    parenthesisClose = 0;
 
 buttons.forEach(button => {
     switch (button.textContent) {
-        case '(':
-        case ')':
+        case '(': button.addEventListener('click',() => {
+            if (calculationLine.textContent.split('')[calculationLine.textContent.length - 1] != ',') {
+                calculationLine.textContent += '(';
+                parenthesisOpen++;
+            }
+        });  
+        break;
+
+        case ')': button.addEventListener('click',() => {
+            if (calculationLine.textContent != '' && parenthesisOpen > parenthesisClose &&
+                calculationLine.textContent.split('')[calculationLine.textContent.length -1] != '(' &&
+                +calculationLine.textContent.split('')[calculationLine.textContent.length -1]) {
+                calculationLine.textContent += ')';
+                parenthesisClose++;
+            }
+        }); 
+        break;
+
         case '1': 
         case '2':
         case '3':
@@ -31,13 +49,26 @@ buttons.forEach(button => {
         break;
 
         case 'CE': button.addEventListener('click',() => {
+            if (calculationLine.textContent == '' || 
+                calculationLine.textContent.split('')[calculationLine.textContent.length - 1] == ',') {
+                    lastComma = null;
+                    parenthesisOpen = 0;
+                    parenthesisClose = 0;
+                }
+            
             calculationLine.textContent = calculationLine.textContent.slice(0,-1); 
+            if (calculationLine.textContent == '') {
+                parenthesisOpen = 0;
+                parenthesisClose = 0;
+            }
         }); 
         break;
 
         case 'C': button.addEventListener('click',() => {
             calculationLine.textContent = '';
             lastComma = null;
+            parenthesisOpen = 0;
+            parenthesisClose = 0;
         }); 
         break;
 
@@ -46,9 +77,10 @@ buttons.forEach(button => {
         case '×':
         case '+': button.addEventListener('click',() => {
             const text = calculationLine.textContent;
-            if (+text.split('')[text.length - 1] || text.split('')[text.length-1] == ')') {
+            if (+text.split('')[text.length - 1] || text.split('')[text.length-1] == ')'
+                || text.split('')[text.length-1] === '0') {
                     calculationLine.textContent += button.textContent;    
-            } else if (text.split('')[text.length-1] == '(' && button.textContent == '-') {
+            } else if ((text.split('')[text.length-1] == '(' || text == '') && button.textContent == '-') {
                 calculationLine.textContent += '-';
             }
         }); 
@@ -61,14 +93,14 @@ buttons.forEach(button => {
                 lastElement != '(' && 
                 lastElement != ')' && 
                 lastElement != '(' &&
-                +lastElement) {
+                (+lastElement || lastElement === '0')) {
                     if (lastComma == null) {
                         calculationLine.textContent += ',';
                         lastComma = calculationLine.textContent.length - 1;
                     } else {
                         const textArray = calculationLine.textContent.split('');
 
-                        for(let i = lastComma++; i < textArray.length - 1; i++) {
+                        for(let i = lastComma + 1; i < textArray.length - 1; i++) {
                             if (textArray[i] == '(' || textArray[i] == ')' || 
                                 textArray[i] == '-' || textArray[i] == '×' ||
                                 textArray[i] == '+' || textArray[i] == '÷') {
@@ -80,6 +112,20 @@ buttons.forEach(button => {
                     }
             }
         }); break;
+
+        case '=': button.addEventListener('click',() => {
+            const text = calculationLine.textContent,
+                  calcArray = text.split('');
+            
+                calcArray.filter((item,i) => {
+                    switch (item) {
+                        case '÷': calcArray[i] = '/'; break;
+                        case '×': calcArray[i] = '*'; break;
+                        case ',': calcArray[i] = '.'; break;
+                }
+            });
+            console.log(calcArray)
+            calculationLine.textContent = eval(calcArray.join(''));
+        });
     }
 });
-
