@@ -125,7 +125,7 @@ buttons.forEach(button => {
                 }
             });
             console.log(calcArray)
-            calculationLine.textContent = eval(calcArray.join(''));
+            calculationLine.textContent = eval(calcArray.join('')).toFixed(2);
         });
     }
 });
